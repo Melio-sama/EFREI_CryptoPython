@@ -6,6 +6,8 @@ from urllib.request import urlopen
 import sqlite3
 from flask import Flask, request, jsonify
 from flask import Flask, request, jsonify, render_template
+import base64
+
 
 app = Flask(__name__)
 
