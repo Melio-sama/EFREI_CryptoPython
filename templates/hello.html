@@ -29,13 +29,17 @@
     <p id="decrypt-result"></p>
 
     <script>
-        function encrypt() {
-            const text = document.getElementById('encrypt-text').value;
-            fetch(`/encrypt/${encodeURIComponent(text)}`)
-                .then(response => response.text())
-                .then(data => {
-                    document.getElementById('encrypt-result').innerText = data;
-                });
+       fetch(`/encrypt/${encodeURIComponent(text)}`)
+    .then(response => response.text())
+    .then(data => {
+        // récupère la chaîne base64 après ":"
+        const base64token = data.split(":")[1].trim();
+        document.getElementById('encrypt-result').innerText = base64token;
+        // aussi remplir automatiquement la clé de décryptage
+        document.getElementById('decrypt-text').value = base64token;
+        document.getElementById('decrypt-key').value = "{{ generated_key }}";
+    });
+
         }
 
         function decrypt() {
