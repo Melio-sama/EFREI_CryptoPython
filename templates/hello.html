@@ -7,7 +7,7 @@
 <body>
     <h1>Chiffrement et Déchiffrement</h1>
 
-    <h2>Générer une clé Fernet (copiez-la)</h2>
+    <h2>Générer une clé Fernet</h2>
     <button onclick="generateKey()">Générer une clé</button>
     <p id="generated-key"></p>
 
@@ -25,11 +25,10 @@
 
     <script>
         function generateKey() {
-            fetch("https://fernet-key-generator.vercel.app/")
-                .then(response => response.text())
-                .then(key => {
-                    document.getElementById("generated-key").innerText = key;
-                });
+            const array = new Uint8Array(32);
+            window.crypto.getRandomValues(array);
+            const key = btoa(String.fromCharCode(...array)).replace(/\+/g, '-').replace(/\//g, '_');
+            document.getElementById("generated-key").innerText = key;
         }
 
         function encrypt() {
