@@ -9,6 +9,14 @@ from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
 
+@app.route('/')
+def hello_world():
+    generated_key = Fernet.generate_key().decode()
+    return render_template('hello.html', generated_key=generated_key)
+
+key = Fernet.generate_key()
+f = Fernet(key)
+
 @app.route('/encrypt/<string:valeur>')
 def encryptage(valeur):
     valeur_bytes = valeur.encode()
