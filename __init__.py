@@ -4,31 +4,47 @@ from flask import render_template
 from flask import json
 from urllib.request import urlopen
 import sqlite3
-                                                                                                                                       
-app = Flask(__name__)                                                                                                                  
-                                                                                                                                       
+from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
+
+
+app = Flask(__name__)
+
 @app.route('/')
-def hello_world():
-    return render_template('hello.html')
+def home():
+    return render_template("hello.html")
 
-key = Fernet.generate_key()
-f = Fernet(key)
+@app.route('/encrypt/', methods=['POST'])
+def encrypt():
+    data = request.get_json()
+    text = data.get('text')
+    key = data.get('key')
 
-@app.route('/encrypt/<string:valeur>')
-def encryptage(valeur):
-    valeur_bytes = valeur.encode()  # Conversion str -> bytes
-    token = f.encrypt(valeur_bytes)  # Encrypt la valeur
-    return f"Valeur encryptée : {token.decode()}"  # Retourne le token en str
+    if not text or not key:
+        return jsonify({"error": "Veuillez fournir 'text' et 'key'."}), 400
 
-@app.route('/decrypt/<string:valeur>')
-def decryptage(valeur):
     try:
-        valeur_bytes = valeur.encode()  # Convertir str -> bytes
-        texte_dechiffre = f.decrypt(valeur_bytes).decode()  # Décrypter et convertir bytes -> str
-        return f"Valeur décryptée : {texte_dechiffre}"
+        f = Fernet(key.encode())
+        token = f.encrypt(text.encode())
+        return jsonify({"encrypted": token.decode()})
     except Exception as e:
-        return f"Erreur lors du décryptage : {str(e)}"
+        return jsonify({"error": f"Erreur de chiffrement : {str(e)}"}), 400
 
-                                                                                                                                                     
-if __name__ == "__main__":
-  app.run(debug=True)
+@app.route('/decrypt/', methods=['POST'])
+def decrypt():
+    data = request.get_json()
+    token = data.get('text')
+    key = data.get('key')
+
+    if not token or not key:
+        return jsonify({"error": "Veuillez fournir 'text' et 'key'."}), 400
+
+    try:
+        f = Fernet(key.encode())
+        decrypted = f.decrypt(token.encode()).decode()
+        return jsonify({"decrypted": decrypted})
+    except Exception as e:
+        return jsonify({"error": f"Erreur de déchiffrement : {str(e)}"}), 400
+
+if __name__ == '__main__':
+    app.run(debug=True)
