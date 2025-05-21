@@ -11,30 +11,27 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello_world():
-    generated_key = Fernet.generate_key().decode()
-    return render_template('hello.html', generated_key=generated_key)
+    return render_template('hello.html')
 
-key = Fernet.generate_key()
-f = Fernet(key)
-
-@app.route('/encrypt/<string:valeur>')
-def encryptage(valeur):
-    valeur_bytes = valeur.encode()
-    token = f.encrypt(valeur_bytes)
-    # encode en base64 url-safe pour pouvoir passer en URL
-    token_b64 = base64.urlsafe_b64encode(token).decode()
-    return f"Valeur encryptée (base64) : {token_b64}"
+@app.route('/encrypt/<string:valeur>/<string:key>')
+def encrypt(valeur, key):
+    try:
+        f = Fernet(key.encode())
+        token = f.encrypt(valeur.encode())
+        token_base64 = base64.urlsafe_b64encode(token).decode()
+        return f"Valeur encryptée : {token_base64}"
+    except Exception as e:
+        return f"Erreur d'encryptage : {str(e)}"
 
 @app.route('/decrypt/<string:valeur>/<string:key>')
-def decryptage(valeur, key):
+def decrypt(valeur, key):
     try:
-        fernet = Fernet(key.encode())
-        # décoder base64 url-safe avant décryptage
-        token_bytes = base64.urlsafe_b64decode(valeur)
-        valeur_bytes = fernet.decrypt(token_bytes)
-        return f"Valeur décryptée : {valeur_bytes.decode()}"
+        f = Fernet(key.encode())
+        token = base64.urlsafe_b64decode(valeur)
+        original = f.decrypt(token).decode()
+        return f"Valeur décryptée : {original}"
     except Exception as e:
-        return f"Erreur : {str(e)}"
+        return f"Erreur de décryptage : {str(e)}"
 
 if __name__ == "__main__":
     app.run(debug=True)
