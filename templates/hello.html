@@ -1,62 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <title>Crypto App</title>
+    <meta charset="UTF-8">
+    <title>Chiffrement / Déchiffrement</title>
 </head>
 <body>
     <h1>Chiffrement et Déchiffrement</h1>
 
-    <h2>Clé générée</h2>
-    <p id="generated-key">{{ generated_key }}</p>
-    <button onclick="copyKey()">Copier la clé</button>
+    <h2>Générer une clé Fernet (copiez-la)</h2>
+    <button onclick="generateKey()">Générer une clé</button>
+    <p id="generated-key"></p>
 
     <h2>Encrypter</h2>
-    <form onsubmit="event.preventDefault(); encrypt()">
-        <label for="encrypt-text">Texte :</label>
-        <input type="text" id="encrypt-text" required>
-        <button type="submit">Encrypter</button>
-    </form>
+    <input type="text" id="encrypt-text" placeholder="Texte à encrypter">
+    <input type="text" id="encrypt-key" placeholder="Clé Fernet">
+    <button onclick="encrypt()">Encrypter</button>
     <p id="encrypt-result"></p>
 
     <h2>Décrypter</h2>
-    <form onsubmit="event.preventDefault(); decrypt()">
-        <label for="decrypt-text">Texte chiffré :</label>
-        <input type="text" id="decrypt-text" required><br>
-        <label for="decrypt-key">Clé :</label>
-        <input type="text" id="decrypt-key" required>
-        <button type="submit">Décrypter</button>
-    </form>
+    <input type="text" id="decrypt-text" placeholder="Texte chiffré">
+    <input type="text" id="decrypt-key" placeholder="Clé Fernet">
+    <button onclick="decrypt()">Décrypter</button>
     <p id="decrypt-result"></p>
 
     <script>
-       fetch(`/encrypt/${encodeURIComponent(text)}`)
-    .then(response => response.text())
-    .then(data => {
-        // récupère la chaîne base64 après ":"
-        const base64token = data.split(":")[1].trim();
-        document.getElementById('encrypt-result').innerText = base64token;
-        // aussi remplir automatiquement la clé de décryptage
-        document.getElementById('decrypt-text').value = base64token;
-        document.getElementById('decrypt-key').value = "{{ generated_key }}";
-    });
-
-        }
-
-        function decrypt() {
-            const text = document.getElementById('decrypt-text').value;
-            const key = document.getElementById('decrypt-key').value;
-            fetch(`/decrypt/${encodeURIComponent(text)}/${encodeURIComponent(key)}`)
+        function generateKey() {
+            fetch("https://fernet-key-generator.vercel.app/")
                 .then(response => response.text())
-                .then(data => {
-                    document.getElementById('decrypt-result').innerText = data;
+                .then(key => {
+                    document.getElementById("generated-key").innerText = key;
                 });
         }
 
-        function copyKey() {
-            const key = document.getElementById('generated-key').innerText;
-            navigator.clipboard.writeText(key)
-                .then(() => alert("Clé copiée !"))
-                .catch(err => alert("Erreur de copie : " + err));
+        function encrypt() {
+            const text = document.getElementById("encrypt-text").value;
+            const key = document.getElementById("encrypt-key").value;
+            fetch(`/encrypt/${encodeURIComponent(text)}/${encodeURIComponent(key)}`)
+                .then(response => response.text())
+                .then(result => {
+                    document.getElementById("encrypt-result").innerText = result;
+                });
+        }
+
+        function decrypt() {
+            const text = document.getElementById("decrypt-text").value;
+            const key = document.getElementById("decrypt-key").value;
+            fetch(`/decrypt/${encodeURIComponent(text)}/${encodeURIComponent(key)}`)
+                .then(response => response.text())
+                .then(result => {
+                    document.getElementById("decrypt-result").innerText = result;
+                });
         }
     </script>
 </body>
