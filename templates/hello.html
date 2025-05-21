@@ -1,3 +1,59 @@
-<!doctype html>
-<title>CryptoPython</title>
-<h1>Bienvue dans votre atelier CryptoPython !</h1>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crypto App</title>
+</head>
+<body>
+    <h1>Chiffrement et Déchiffrement</h1>
+
+    <h2>Clé générée</h2>
+    <p id="generated-key">{{ generated_key }}</p>
+    <button onclick="copyKey()">Copier la clé</button>
+
+    <h2>Encrypter</h2>
+    <form onsubmit="event.preventDefault(); encrypt()">
+        <label for="encrypt-text">Texte :</label>
+        <input type="text" id="encrypt-text" required>
+        <button type="submit">Encrypter</button>
+    </form>
+    <p id="encrypt-result"></p>
+
+    <h2>Décrypter</h2>
+    <form onsubmit="event.preventDefault(); decrypt()">
+        <label for="decrypt-text">Texte chiffré :</label>
+        <input type="text" id="decrypt-text" required><br>
+        <label for="decrypt-key">Clé :</label>
+        <input type="text" id="decrypt-key" required>
+        <button type="submit">Décrypter</button>
+    </form>
+    <p id="decrypt-result"></p>
+
+    <script>
+        function encrypt() {
+            const text = document.getElementById('encrypt-text').value;
+            fetch(`/encrypt/${encodeURIComponent(text)}`)
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('encrypt-result').innerText = data;
+                });
+        }
+
+        function decrypt() {
+            const text = document.getElementById('decrypt-text').value;
+            const key = document.getElementById('decrypt-key').value;
+            fetch(`/decrypt/${encodeURIComponent(text)}/${encodeURIComponent(key)}`)
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('decrypt-result').innerText = data;
+                });
+        }
+
+        function copyKey() {
+            const key = document.getElementById('generated-key').innerText;
+            navigator.clipboard.writeText(key)
+                .then(() => alert("Clé copiée !"))
+                .catch(err => alert("Erreur de copie : " + err));
+        }
+    </script>
+</body>
+</html>
