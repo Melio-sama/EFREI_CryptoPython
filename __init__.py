@@ -7,44 +7,22 @@ import sqlite3
 from flask import Flask, request, jsonify
 from flask import Flask, request, jsonify, render_template
 
-
 app = Flask(__name__)
 
-@app.route('/')
-def home():
-    return render_template("hello.html")
+@app.route('/encrypt/<string:valeur>')
+def encryptage(valeur):
+    valeur_bytes = valeur.encode()
+    token = f.encrypt(valeur_bytes)
+    return f"Valeur encryptée : {token.decode()}"
 
-@app.route('/encrypt/', methods=['POST'])
-def encrypt():
-    data = request.get_json()
-    text = data.get('text')
-    key = data.get('key')
-
-    if not text or not key:
-        return jsonify({"error": "Veuillez fournir 'text' et 'key'."}), 400
-
+@app.route('/decrypt/<string:valeur>/<string:key>')
+def decryptage(valeur, key):
     try:
-        f = Fernet(key.encode())
-        token = f.encrypt(text.encode())
-        return jsonify({"encrypted": token.decode()})
+        fernet = Fernet(key.encode())
+        valeur_bytes = fernet.decrypt(valeur.encode())
+        return f"Valeur décryptée : {valeur_bytes.decode()}"
     except Exception as e:
-        return jsonify({"error": f"Erreur de chiffrement : {str(e)}"}), 400
+        return f"Erreur : {str(e)}"
 
-@app.route('/decrypt/', methods=['POST'])
-def decrypt():
-    data = request.get_json()
-    token = data.get('text')
-    key = data.get('key')
-
-    if not token or not key:
-        return jsonify({"error": "Veuillez fournir 'text' et 'key'."}), 400
-
-    try:
-        f = Fernet(key.encode())
-        decrypted = f.decrypt(token.encode()).decode()
-        return jsonify({"decrypted": decrypted})
-    except Exception as e:
-        return jsonify({"error": f"Erreur de déchiffrement : {str(e)}"}), 400
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
